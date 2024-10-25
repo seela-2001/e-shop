@@ -1,0 +1,64 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ product.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Product image -->
+            <div class="col-md-5">
+                <img class="img-fluid" src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ product.name }}">
+            </div>
+
+            <!-- Product details -->
+            <div class="col-md-7">
+                <h1 class="display-4">{{ product.name }}</h1>
+                <h2 class="text-muted">
+                    <a href="{{ product.category.get_absolute_url }}" class="text-decoration-none">
+                        {{ product.category }}
+                    </a>
+                </h2>
+                <p class="price h4 text-success">${{ product.price }}</p>
+
+                <!-- Add to cart form -->
+                <form action="{% url "cart:cart_add" product.id %}" method="post" class="mt-3">
+                    {{ cart_product_form }}
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        Add to cart
+                    </button>
+                </form>
+
+                <div class="mt-4">
+                    {{ product.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        {% if recommended_products %}
+        <div class="recommendations mt-5">
+            <h3>People who bought this also bought</h3>
+            <div class="row">
+                {% for p in recommended_products %}
+                <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                    <div class="card h-100">
+                        <a href="{{ p.get_absolute_url }}">
+                            <img src="{% if p.image %}{{ p.image.url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" class="card-img-top img-fluid" alt="{{ p.name }}">
+                        </a>
+                        <div class="card-body text-center">
+                            <p class="card-text">
+                                <a href="{{ p.get_absolute_url }}" class="text-decoration-none text-dark">{{ p.name }}</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

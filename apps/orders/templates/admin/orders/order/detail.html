@@ -1,0 +1,108 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}
+  Order {{ order.id }} {{ block.user }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url "admin:index" %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url "admin:orders_order_changelist" %}">Orders</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Order {{ order.id }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="card my-4">
+        <div class="card-header">
+            <h1>Order {{ order.id }}</h1>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary" onclick="window.print();">
+                    <i class="fas fa-print"></i> Print order
+                </button>
+            </div>
+            <table class="table table-striped">
+                <tr>
+                    <th>Created</th>
+                    <td>{{ order.created }}</td>
+                </tr>
+                <tr>
+                    <th>Customer</th>
+                    <td>{{ order.first_name }} {{ order.last_name }}</td>
+                </tr>
+                <tr>
+                    <th>E-mail</th>
+                    <td><a href="mailto:{{ order.email }}">{{ order.email }}</a></td>
+                </tr>
+                <tr>
+                    <th>Address</th>
+                    <td>
+                        {{ order.address }}, {{ order.postal_code }} {{ order.city }}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Total amount</th>
+                    <td>${{ order.get_total_cost }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        {% if order.paid %}
+                            <span class="badge bg-success">Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning">Pending payment</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card my-4">
+        <div class="card-header">
+            <h2>Items bought</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr class="row{% cycle "1" "2" %}">
+                        <td>{{ item.product.name }}</td>
+                        <td class="num">${{ item.price }}</td>
+                        <td class="num">{{ item.quantity }}</td>
+                        <td class="num">${{ item.get_cost }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if order.coupon %}
+                        <tr class="table-secondary">
+                            <td colspan="3" class="text-end">Subtotal</td>
+                            <td class="num">${{ order.get_total_cost_before_discount|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="table-secondary">
+                            <td colspan="3" class="text-end">
+                                "{{ order.coupon.code }}" coupon ({{ order.discount }}% off)
+                            </td>
+                            <td class="num neg">- ${{ order.get_discount|floatformat:2 }}</td>
+                        </tr>
+                    {% endif %}
+                    <tr class="table-primary">
+                        <td colspan="3" class="text-end"><strong>Total</strong></td>
+                        <td class="num">${{ order.get_total_cost }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

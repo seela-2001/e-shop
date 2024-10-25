@@ -1,0 +1,67 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Pay your order{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Order Summary</h1>
+    
+    <!-- Order Table -->
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr class="table-row">
+                <td class="text-center">
+                    <img src="{% if item.product.image %}{{ item.product.image.url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" 
+                         class="img-fluid rounded" style="max-width: 75px;">
+                </td>
+                <td>{{ item.product.name }}</td>
+                <td>${{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.get_cost }}</td>
+            </tr>
+            {% endfor %}
+
+            <!-- Coupon Section -->
+            {% if order.coupon %}
+            <tr class="table-warning">
+                <td>Subtotal</td>
+                <td colspan="3"></td>
+                <td class="text-right">
+                    ${{ order.get_total_cost_before_discount|floatformat:2 }}
+                </td>
+            </tr>
+            <tr class="table-success">
+                <td>"{{ order.coupon.code }}" coupon ({{ order.discount }}% off)</td>
+                <td colspan="3"></td>
+                <td class="text-right text-danger">
+                    - ${{ order.get_discount|floatformat:2 }}
+                </td>
+            </tr>
+            {% endif %}
+
+            <!-- Total Cost Section -->
+            <tr class="table-info">
+                <td colspan="4" class="text-right font-weight-bold">Total</td>
+                <td class="text-right font-weight-bold">${{ order.get_total_cost|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Payment Form -->
+    <form action="{% url 'payment:process' %}" method="post" class="text-center">
+        <button type="submit" class="btn btn-primary btn-lg mt-4">Pay Now</button>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
